@@ -1,5 +1,6 @@
-"""Vercel serverless function for the main page"""
-import json
+from flask import Flask, Response
+
+app = Flask(__name__)
 
 HTML_CONTENT = '''<!DOCTYPE html>
 <html lang="en">
@@ -224,7 +225,6 @@ HTML_CONTENT = '''<!DOCTYPE html>
                 return;
             }
 
-            // Show loader, hide status, disable button
             loader.style.display = 'block';
             status.style.display = 'none';
             downloadBtn.style.display = 'none';
@@ -265,7 +265,6 @@ HTML_CONTENT = '''<!DOCTYPE html>
                 return;
             }
 
-            // Create blob and download
             const blob = new Blob([csvData], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a');
@@ -286,22 +285,7 @@ HTML_CONTENT = '''<!DOCTYPE html>
 </body>
 </html>'''
 
-def handler(request):
-    """Vercel serverless function handler"""
-    try:
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'text/html',
-            },
-            'body': HTML_CONTENT
-        }
-    except Exception as e:
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'text/html',
-            },
-            'body': f'<html><body><h1>Error</h1><p>{str(e)}</p></body></html>'
-        }
-
+@app.route('/', defaults={'path': ''})
+@app.route('/<path:path>')
+def catch_all(path):
+    return Response(HTML_CONTENT, mimetype='text/html')
