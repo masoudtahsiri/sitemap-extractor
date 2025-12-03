@@ -286,13 +286,22 @@ HTML_CONTENT = '''<!DOCTYPE html>
 </body>
 </html>'''
 
-def handler(req):
+def handler(request):
     """Vercel serverless function handler"""
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'text/html',
-        },
-        'body': HTML_CONTENT
-    }
+    try:
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'text/html',
+            },
+            'body': HTML_CONTENT
+        }
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'text/html',
+            },
+            'body': f'<html><body><h1>Error</h1><p>{str(e)}</p></body></html>'
+        }
 

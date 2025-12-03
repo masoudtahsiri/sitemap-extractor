@@ -3,18 +3,18 @@ import json
 import csv
 from io import StringIO
 from urllib.parse import urlparse
-import sys
-import os
-
-# Add parent directory to path to import sitemap_parser
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from sitemap_parser import parse_sitemap_url
 
 def handler(request):
     """Vercel serverless function handler"""
     try:
-        # Parse request body
-        body = getattr(request, 'body', '')
+        # Parse request body - handle different request formats
+        body = ''
+        if hasattr(request, 'body'):
+            body = request.body
+        elif isinstance(request, dict):
+            body = request.get('body', '')
+        
         if isinstance(body, bytes):
             body = body.decode('utf-8')
         elif body is None:
@@ -23,7 +23,7 @@ def handler(request):
         if body:
             try:
                 data = json.loads(body)
-            except json.JSONDecodeError:
+            except (json.JSONDecodeError, TypeError):
                 data = {}
         else:
             data = {}
@@ -82,11 +82,17 @@ def handler(request):
         }
         
     except Exception as e:
+        import traceback
+        error_details = traceback.format_exc()
+        print(f"Error in extract handler: {error_details}")
         return {
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
             },
-            'body': json.dumps({'error': str(e)})
+            'body': json.dumps({
+                'error': str(e),
+                'type': type(e).__name__
+            })
         }
 
