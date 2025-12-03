@@ -165,19 +165,20 @@ HTML_CONTENT = '''<!DOCTYPE html>
 </body>
 </html>'''
 
-def parse_sitemap_url(url):
+def parse_sitemap_url(url, max_sitemaps=50):
     """Parse a sitemap URL and extract all URLs recursively"""
     urls = set()
     visited_sitemaps = set()
     
-    def fetch_and_parse(sitemap_url):
-        if sitemap_url in visited_sitemaps:
+    def fetch_and_parse(sitemap_url, depth=0):
+        # Limit recursion and number of sitemaps
+        if sitemap_url in visited_sitemaps or len(visited_sitemaps) >= max_sitemaps or depth > 3:
             return
         visited_sitemaps.add(sitemap_url)
         
         try:
             headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'}
-            response = requests.get(sitemap_url, headers=headers, timeout=30)
+            response = requests.get(sitemap_url, headers=headers, timeout=10)
             response.raise_for_status()
             
             root = ET.fromstring(response.content)
@@ -186,7 +187,7 @@ def parse_sitemap_url(url):
                 for sitemap in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}sitemap'):
                     loc = sitemap.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
                     if loc is not None and loc.text:
-                        fetch_and_parse(loc.text)
+                        fetch_and_parse(loc.text, depth + 1)
             else:
                 for url_elem in root.findall('.//{http://www.sitemaps.org/schemas/sitemap/0.9}url'):
                     loc = url_elem.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc')
@@ -202,7 +203,7 @@ def parse_sitemap_url(url):
             for sitemap in root.findall('.//sitemap'):
                 loc = sitemap.find('loc')
                 if loc is not None and loc.text:
-                    fetch_and_parse(loc.text)
+                    fetch_and_parse(loc.text, depth + 1)
                     
         except Exception as e:
             print(f"Error processing {sitemap_url}: {e}")
