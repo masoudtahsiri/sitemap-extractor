@@ -10,20 +10,28 @@ def handler(request):
     try:
         # Parse request body - handle different request formats
         body = ''
+        
+        # Try different ways to access the request body
         if hasattr(request, 'body'):
             body = request.body
         elif isinstance(request, dict):
             body = request.get('body', '')
+        elif hasattr(request, 'get'):
+            body = request.get('body', '')
         
+        # Handle bytes and None
         if isinstance(body, bytes):
             body = body.decode('utf-8')
         elif body is None:
             body = ''
+        elif not isinstance(body, str):
+            body = str(body)
         
+        # Parse JSON
         if body:
             try:
                 data = json.loads(body)
-            except (json.JSONDecodeError, TypeError):
+            except (json.JSONDecodeError, TypeError, ValueError):
                 data = {}
         else:
             data = {}
