@@ -39,13 +39,14 @@ def handler(request):
         sitemap_url = data.get('sitemap_url', '').strip()
         
         if not sitemap_url:
-            return {
-                'statusCode': 400,
-                'headers': {
-                    'Content-Type': 'application/json',
-                },
-                'body': json.dumps({'error': 'Sitemap URL is required'})
-            }
+        return {
+            'statusCode': 400,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+            },
+            'body': json.dumps({'error': 'Sitemap URL is required'})
+        }
         
         # Validate URL
         parsed = urlparse(sitemap_url)
@@ -54,6 +55,7 @@ def handler(request):
                 'statusCode': 400,
                 'headers': {
                     'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
                 },
                 'body': json.dumps({'error': 'Invalid URL format'})
             }
@@ -66,6 +68,7 @@ def handler(request):
                 'statusCode': 404,
                 'headers': {
                     'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*',
                 },
                 'body': json.dumps({'error': 'No URLs found in sitemap'})
             }
@@ -81,6 +84,9 @@ def handler(request):
             'statusCode': 200,
             'headers': {
                 'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type',
             },
             'body': json.dumps({
                 'success': True,
@@ -97,6 +103,7 @@ def handler(request):
             'statusCode': 500,
             'headers': {
                 'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*',
             },
             'body': json.dumps({
                 'error': str(e),
